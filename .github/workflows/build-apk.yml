@@ -10,7 +10,15 @@ jobs:
 
       - name: Find project folder
         run: |
-          F=$(find . -maxdepth 4 -name settings.gradle -not -path '*/node_modules/*' | head -n 1)
+          F=$(find . -maxdepth 4 -name settings.gradle -not -path '*/node_modules/*' -not -path './.git/*' | head -n 1)
+          if [ -z "$F" ]; then
+            Z=$(find . -maxdepth 2 -name '*.zip' -not -path './.git/*' | head -n 1)
+            if [ -n "$Z" ]; then
+              echo "Unzipping $Z"
+              unzip -q -o "$Z" -d _unzipped
+              F=$(find _unzipped -maxdepth 4 -name settings.gradle | head -n 1)
+            fi
+          fi
           if [ -z "$F" ]; then echo "settings.gradle not found"; find . -maxdepth 3 -not -path './.git/*' | head -50; exit 1; fi
           D=$(dirname "$F")
           echo "Project folder: $D"
